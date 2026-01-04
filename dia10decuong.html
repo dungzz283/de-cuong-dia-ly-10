@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Địa Lý 10 - Ôn Tập Toàn Diện</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00f2fe; --secondary: #4facfe; --bg: #0f172a;
+            --glass: rgba(255, 255, 255, 0.07); --success: #10b981; --danger: #ef4444;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
+        body {
+            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+            color: #e2e8f0; min-height: 100vh; padding: 20px;
+        }
+        .container {
+            max-width: 1000px; margin: 0 auto; background: var(--glass); backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 30px; padding: 40px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
+        h1 { text-align: center; margin-bottom: 40px; background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 2.5rem; }
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; }
+        .card {
+            background: rgba(255,255,255,0.03); border-radius: 20px; padding: 35px; text-align: center;
+            cursor: pointer; transition: 0.3s; border: 1px solid rgba(255,255,255,0.1);
+        }
+        .card:hover { transform: translateY(-12px); background: rgba(255,255,255,0.12); border-color: var(--primary); }
+        .hidden { display: none !important; }
+        .btn {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: #0f172a; border: none; padding: 12px 30px; border-radius: 50px;
+            font-weight: 700; cursor: pointer; transition: 0.3s;
+        }
+        .back-btn {
+            position: fixed; bottom: 30px; right: 30px; z-index: 100; padding: 15px 30px; font-size: 1.1rem;
+        }
+        /* Styles for True/False */
+        .quiz-card { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; margin-bottom: 25px; }
+        .q-title { font-weight: bold; margin-bottom: 15px; color: #00f2fe; }
+        .passage { background: rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; margin-bottom: 15px; font-style: italic; }
+        .table-container { overflow-x: auto; margin-bottom: 15px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid rgba(255,255,255,0.2); padding: 8px; text-align: center; }
+        th { background: rgba(255,255,255,0.1); }
+        .option-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .btn-group { display: flex; gap: 5px; }
+        .tf-btn { padding: 6px 15px; border: 1px solid rgba(255,255,255,0.3); background: transparent; color: #e2e8f0; cursor: pointer; border-radius: 5px; }
+        .tf-btn.selected { background: #4facfe; color: #0f172a; }
+        .correct-ans { background: rgba(16,185,129,0.3) !important; }
+        .wrong-ans { background: rgba(239,68,68,0.3) !important; }
+        .feedback { font-size: 0.85rem; font-weight: bold; margin-top: 4px; display: block; }
+        /* Styles for Short Answer */
+        .short-card { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; margin-bottom: 25px; border-left: 6px solid var(--primary); }
+        .short-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        .short-table th, .short-table td { border: 1px solid rgba(255,255,255,0.2); padding: 10px; text-align: center; }
+        .short-table th { background: rgba(255,255,255,0.1); }
+        .input-group { margin-top: 15px; }
+        input[type="text"] { width: 100%; padding: 12px; border: 2px solid rgba(255,255,255,0.3); background: transparent; color: #e2e8f0; border-radius: 8px; }
+        .short-feedback { margin-top: 10px; font-weight: bold; padding: 8px; border-radius: 5px; display: none; }
+        .short-correct { background: rgba(16,185,129,0.3); color: var(--success); }
+        .short-wrong { background: rgba(239,68,68,0.3); color: var(--danger); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Home Screen -->
+    <div id="home-screen">
+        <h1>ĐỊA LÝ 10 - ÔN TẬP CUỐI HỌC KÌ I</h1>
+        <div class="menu-grid">
+            <div class="card" onclick="startMode('multiple')">
+                <h3>📝 Trắc Nghiệm Chọn Đáp Án</h3>
+                <p>40 câu hỏi trắc nghiệm </p>
+            </div>
+            <div class="card" onclick="startMode('truefalse')">
+                <h3>✅ Đúng / Sai</h3>
+                <p>6 câu hỏi đúng sai</p>
+            </div>
+            <div class="card" onclick="startMode('short')">
+                <h3>✍️ Trả Lời Ngắn</h3>
+                <p>Tính toán từ bảng số liệu</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Multiple Choice Section -->
+    <div id="multiple-section" class="hidden">
+        <h1 style="font-size:2rem; margin-bottom:30px;">TRẮC NGHIỆM CHỌN ĐÁP ÁN</h1>
+        <div id="mc-question-container"></div>
+        <div style="text-align: right; margin-top: 30px;">
+            <button class="btn" onclick="submitMultiple()">Nộp Bài</button>
+        </div>
+    </div>
+
+    <!-- True/False Section -->
+    <div id="truefalse-section" class="hidden">
+        <h1 style="font-size:2rem; margin-bottom:30px;">PHẦN ĐÚNG / SAI</h1>
+        <div id="tf-quiz-content"></div>
+        <div style="text-align:center; margin:40px 0;">
+            <button class="btn" id="tf-submit-btn">Nộp Bài & Xem Kết Quả</button>
+        </div>
+        <div id="tf-result-summary" style="display:none; text-align:center; padding:20px; background:rgba(255,255,255,0.1); border-radius:15px; margin-top:20px;"></div>
+    </div>
+
+    <!-- Short Answer Section -->
+    <div id="short-section" class="hidden">
+        <h1 style="font-size:2rem; margin-bottom:30px;">CÂU HỎI TRẢ LỜI NGẮN</h1>
+        <p style="text-align:center; margin-bottom:30px;">Tính toán dựa trên bảng số liệu và điền kết quả (làm tròn đến hàng đơn vị)</p>
+        <div id="short-quiz-content"></div>
+        <div style="text-align:center; margin:40px 0;">
+            <button class="btn" id="short-submit-btn">Nộp Bài & Xem Đáp Án</button>
+        </div>
+    </div>
+
+    <!-- Result Screen for Multiple Choice -->
+    <div id="mc-result-screen" class="hidden" style="text-align:center;">
+        <h2>Kết Quả: <span id="mc-final-score"></span></h2>
+        <div id="mc-review-section" style="max-height:500px; overflow-y:auto; margin:30px 0; text-align:left;"></div>
+        <button class="btn" onclick="backToHome()">Quay Lại Màn Hình Chính</button>
+    </div>
+</div>
+
+<button class="btn back-btn hidden" id="back-btn" onclick="backToHome()">← Quay Lại</button>
+
+<script>
+    // ==================== DATA ====================
+
+    // Multiple Choice Questions (exact from your first file)
+    const multipleQuestions = [
+        { q: "Từ xích đạo về cực là các khối khí lần lượt là", a: ["Xích đạo, chí tuyến, ôn đới, cực.", "Xích đạo, ôn đới, chí tuyến, cực.", "Xích đạo, cực, ôn đới, chí tuyến.", "Xích đạo, chí tuyến, cực, ôn đới."], c: 0 },
+        { q: "Trên bề mặt Trái Đất không có khối khí nào sau đây?", a: ["Chí tuyến lục địa.", "Xích đạo lục địa.", "Ôn đới lục địa.", "Cực lục địa."], c: 1 },
+        { q: "Khối khí nào sau đây không phân biệt thành kiểu lục địa và kiểu hải dương?", a: ["Chí tuyến.", "Xích đạo.", "Cực.", "Ôn đới."], c: 1 },
+        { q: "Frông là mặt ngăn cách giữa hai", a: ["khối khí khác biệt nhau về tính chất vật lí.", "khu vực áp cao khác biệt nhau về trị số áp.", "dòng biển nóng và lạnh ngược hướng nhau.", "tầng khí quyển khác biệt nhau về tính chất."], c: 0 },
+        { q: "Nhiệt độ trung bình năm cao nhất ở", a: ["xích đạo.", "chí tuyến.", "vòng cực.", "cực."], c: 1 },
+        { q: "Biên độ nhiệt độ năm lớn nhất ở", a: ["xích đạo.", "chí tuyến.", "vòng cực.", "cực."], c: 3 },
+        { q: "Nhiệt độ trung bình năm cao nhất ở", a: ["bán cầu Tây.", "đại dương.", "lục địa.", "bán cầu Nam."], c: 2 },
+        { q: "Thuỷ quyển là lớp nước trên Trái Đất bao gồm nước ở", a: ["biển, đại dương; nước ngầm; băng tuyết; nước sông, suối, hồ.", "biển, đại dương; nước trên lục địa; hơi nước trong khí quyển.", "sông, suối, hồ; nước ngầm; nước trong các biển và đại dương.", "sông, suối, hồ; băng tuyết; nước trong các đại dương, hơi nước."], c: 1 },
+        { q: "Ở miền khí hậu nóng, nhân tố chủ yếu tác động đến chế độ nước sông là", a: ["nước ngầm.", "chế độ mưa.", "địa hình.", "thực vật."], c: 1 },
+        { q: "Ở miền ôn đới lạnh, nhân tố chủ yếu tác động đến chế độ nước sông là", a: ["địa hình.", "chế độ mưa.", "băng tuyết.", "thực vật."], c: 2 },
+        { q: "Ở những vùng đất, đá thấm nước nhiều, nhân tố nào sau đây có vai trò đáng kể trong điều hoà chế độ nước sông?", a: ["Nước ngầm.", "Băng tuyết.", "Địa hình.", "Thực vật."], c: 0 },
+        { q: "Ý nghĩa của hồ đầm đối với sông là", a: ["điều hoà chế độ nước sông.", "giảm lưu lượng nước sông.", "nhiều thung lũng.", "địa hình dốc."], c: 0 },
+        { q: "Ở miền núi, nước sông chảy nhanh hơn đồng bằng là do", a: ["địa hình phức tạp.", "nhiều thung lũng.", "nhiều đỉnh núi cao.", "địa hình dốc."], c: 3 },
+        { q: "Sông nào sau đây chảy qua Việt Nam?", a: ["Nin.", "I-ê-nit-xây.", "A-ma-dôn.", "Mê Công."], c: 3 },
+        { q: "Độ muối trung bình của nước biển là", a: ["33‰", "34‰", "35‰", "36‰"], c: 2 },
+        { q: "Độ muối của nước biển không phụ thuộc vào", a: ["lượng mưa.", "lượng bốc hơi.", "lượng nước ở các hồ đầm.", "lượng nước sông chảy ra."], c: 2 },
+        { q: "Độ muối nước biển lớn nhất ở vùng", a: ["xích đạo.", "chí tuyến.", "cực.", "ôn đới."], c: 1 },
+        { q: "Nhiệt độ trung bình của đại dương thế giới là", a: ["15,5°C.", "16,5°C.", "17,5°C.", "18,5°C."], c: 2 },
+        { q: "Hình thức dao động của sóng biển là theo chiều", a: ["thẳng đứng.", "xoay tròn.", "chiều ngang.", "xô vào bờ."], c: 0 },
+        { q: "Nguyên nhân chủ yếu tạo nên sóng biển là do", a: ["mưa.", "núi lửa.", "động đất.", "gió."], c: 3 },
+        { q: "Nguyên nhân gây ra sóng thần chủ yếu là do", a: ["gió.", "bão.", "động đất.", "núi lửa."], c: 2 },
+        { q: "Đặc trưng của đất (thổ nhưỡng) là", a: ["tơi xốp.", "độ phì.", "độ ẩm.", "vụn bở."], c: 1 },
+        { q: "Đất (thổ nhưỡng) là lớp vật chất", a: ["tơi xốp ở bề mặt lục địa.", "rắn ở bề mặt vỏ Trái Đất.", "mềm bở ở bề mặt lục địa.", "vụn ở bề mặt vỏ Trái Đất."], c: 0 },
+        { q: "Nhân tố nào sau đây tác động đến việc tạo nên thành phần vô cơ cho đất?", a: ["Khí hậu.", "Sinh vật.", "Địa hình.", "Đá mẹ."], c: 3 },
+        { q: "Nhân tố nào sau đây tác động đến việc tạo nên thành phần hữu cơ cho đất?", a: ["Khí hậu.", "Sinh vật.", "Địa hình.", "Đá mẹ."], c: 1 },
+        { q: "Yếu tố khí hậu nào sau đây ảnh hưởng trực tiếp đến sự hình thành đất?", a: ["Nhiệt và ẩm.", "Ẩm và khí.", "Khí và nhiệt.", "Nhiệt và nước."], c: 0 },
+        { q: "Hoạt động nào của con người không làm biến đổi tính chất đất?", a: ["Nông nghiệp.", "Lâm nghiệp.", "Ngư nghiệp.", "Công nghiệp."], c: 2 },
+        { q: "Sinh quyển là một quyển của Trái Đất có", a: ["toàn bộ sinh vật sinh sống.", "tất cả sinh vật và thổ nhưỡng.", "toàn bộ động vật và vi sinh vật.", "toàn bộ thực vật và vi sinh vật."], c: 0 },
+        { q: "Yếu tố nào của địa hình tạo nên các vành đai phân bố thực vật?", a: ["Độ cao.", "Hướng nghiêng.", "Hướng sườn.", "Độ dốc."], c: 0 },
+        { q: "Nhân tố sinh học quyết định đối với sự phát triển và phân bố động vật là", a: ["nhiệt độ.", "độ ẩm.", "thức ăn.", "nơi sống."], c: 2 },
+        { q: "Ảnh hưởng tích cực của con người đối với sự phân bố sinh vật không phải là", a: ["Giảm diện tích rừng tự nhiên.", "Thay đổi phạm vi phân bố cây trồng.", "Đưa động vật nuôi sang lục địa khác.", "Trồng rừng, mở rộng diện tích rừng."], c: 0 },
+        { q: "Nhân tố ảnh hưởng lớn nhất đến sự phân bố thảm thực vật trên Trái Đất?", a: ["Địa hình.", "Khí hậu.", "Thổ nhưỡng.", "Sinh vật."], c: 1 },
+        { q: "Lớp vỏ địa lí là", a: ["vỏ cảnh quan.", "vỏ Trái Đất.", "vỏ sinh quyển.", "vỏ khí quyển."], c: 0 },
+        { q: "Vỏ địa lí là vỏ của Trái Đất, ở đó có", a: ["sự xâm nhập và tác động lẫn nhau của các quyển.", "khí quyển, thạch quyển, thuỷ quyển, sinh quyển.", "các lớp vỏ bộ phận, quan trọng nhất là sinh quyển.", "vỏ cảnh quan gồm khí, thạch, thuỷ, sinh quyển."], c: 0 },
+        { q: "Vỏ địa lí có giới hạn trùng hợp hoàn toàn với lớp vỏ nào?", a: ["Thạch quyển.", "Thuỷ quyển.", "Sinh quyển.", "Thổ nhưỡng quyển."], c: 2 },
+        { q: "Quy luật thống nhất và hoàn chỉnh của vỏ địa lí là quy luật về", a: ["mối quan hệ lẫn nhau giữa các bộ phận tự nhiên.", "sự thay đổi các thành phần tự nhiên hướng vĩ độ.", "sự thay đổi các thành phần tự nhiên theo kinh độ.", "mối quan hệ lẫn nhau giữa con người và tự nhiên."], c: 0 },
+        { q: "Quy luật nào sau đây chủ yếu do ngoại lực tạo nên?", a: ["Địa đới.", "Địa ô.", "Đai cao.", "Thống nhất."], c: 0 },
+        { q: "Quy luật nào sau đây chủ yếu do nội lực tạo nên?", a: ["Địa đới, địa ô.", "Địa ô, đai cao.", "Đai cao, tuần hoàn.", "Thống nhất, địa đới."], c: 1 },
+        { q: "Trong tự nhiên, một thành phần thay đổi dẫn đến các thành phần còn lại thay đổi là biểu hiện của quy luật", a: ["địa đới.", "địa ô.", "thống nhất và hoàn chỉnh.", "đai cao."], c: 2 },
+        { q: "Sự thay đổi có quy luật của tất cả các thành phần địa lí từ xích đạo đến cực là biểu hiện của quy luật", a: ["địa đới.", "địa ô.", "thống nhất và hoàn chỉnh.", "đai cao."], c: 0 }
+    ];
+
+    // True/False Questions (exact from dungsai.html)
+    const trueFalseQuestions = [
+        {
+            id: 1, title: "Câu 1: Cho bảng số liệu nhiệt độ ở bán cầu Bắc:",
+            type: "table",
+            table: `<table><tr><th>Vĩ độ</th><th>0°</th><th>20°</th><th>30°</th><th>40°</th><th>50°</th><th>60°</th><th>70°</th><th>80°</th></tr><tr><td>Nhiệt độ TB</td><td>24.5</td><td>25.0</td><td>20.4</td><td>14.0</td><td>5.4</td><td>-0.6</td><td>-10.4</td><td>-20.0</td></tr><tr><td>Biên độ nhiệt</td><td>1.8</td><td>7.4</td><td>13.3</td><td>17.7</td><td>23.8</td><td>29.0</td><td>32.2</td><td>31.0</td></tr></table>`,
+            options: [
+                { t: "Nhiệt độ trung bình năm giảm từ xích đạo về cực.", c: true },
+                { t: "Khu vực chí tuyến có nhiệt độ trung bình năm cao nhất.", c: true },
+                { t: "Biên độ nhiệt độ năm tăng từ xích đạo về cực.", c: true },
+                { t: "Biên độ nhiệt độ năm thay đổi theo vĩ độ do góc nhập xạ giảm từ xích đạo về cực.", c: true }
+            ]
+        },
+        {
+            id: 2, title: "Câu 2: Thành phần của khí quyển:",
+            passage: "“Khí quyển, lớp vỏ khí bao quanh Trái Đất... Thành phần chính là nito và oxy, cùng một lượng nhỏ khí khác như argon, CO2 và hơi nước...”",
+            options: [
+                { t: "Thành phần chính của khí quyển là nito và oxy, cùng một lượng nhỏ khí khác.", c: true },
+                { t: "Khí quyển là lớp vỏ khí bao quanh trái đất.", c: true },
+                { t: "Thành phần chính của khí quyển chỉ gồm nito và oxy.", c: false },
+                { t: "Hơi nước không phải là thành phần của khí quyển.", c: false }
+            ]
+        },
+        {
+            id: 3, title: "Câu 3: Hiện tượng Hiệu ứng nhà kính:",
+            passage: "“Hiệu ứng nhà kính giúp duy trì nhiệt độ bề mặt Trái Đất... Hiện nay, chúng hấp thụ bức xạ hồng ngoại làm cho nhiệt độ không khí tăng lên.”",
+            options: [
+                { t: "Cần loại bỏ hiệu ứng nhà kính.", c: false },
+                { t: "Hiệu ứng nhà kính giúp điều hòa nhiệt độ bề mặt Trái Đất.", c: true },
+                { t: "Hiện nay, con người đang lạm dụng quá nhiều hiệu ứng nhà kính.", c: true },
+                { t: "Hiệu ứng nhà kính là một thành phần quan trọng hình thành nên lớp khí quyển.", c: true }
+            ]
+        },
+        {
+            id: 4, title: "Câu 4: Tác động của bức xạ mặt trời và nguồn năng lượng bên trong:",
+            passage: "Sự thay đổi diễn ra theo vĩ độ, kinh độ và độ cao địa hình tạo nên quy luật địa đới và phi địa đới...",
+            options: [
+                { t: "Biên độ nhiệt độ năm của nước ta giảm từ Bắc vào Nam là biểu hiện của quy luật địa đới.", c: true },
+                { t: "Tính phi địa đới biểu hiện rõ nhất ở các vùng đất bằng phẳng, rộng lớn.", c: false },
+                { t: "Sự đối lập về khí hậu giữa đồng bằng ven biển Nam Trung Bộ và Tây Nguyên là biểu hiện của quy luật đai cao và địa ô.", c: true },
+                { t: "Quy luật địa đới và phi địa đới là cơ sở để phân chia các khu vực địa lí.", c: true }
+            ]
+        },
+        {
+            id: 5, title: "Câu 5: Sự khác biệt giữa các hệ sinh thái theo quy luật địa đới:",
+            options: [
+                { t: "Ở vùng xích đạo, hệ sinh thái phong phú hơn do lượng mưa nhiều và nhiệt độ ổn định.", c: true },
+                { t: "Vùng cực có hệ sinh thái ổn định hơn do ít chịu tác động của biến đổi khí hậu.", c: false },
+                { t: "Sự khác biệt về độ dày của lớp đất mặt ảnh hưởng đến hệ sinh thái ở cả hai khu vực.", c: true },
+                { t: "Vùng xích đạo có sự đa dạng sinh học thấp hơn do cạnh tranh sinh tồn cao.", c: false }
+            ]
+        },
+        {
+            id: 6, title: "Câu 6: Thông tin về Miền Bắc nước ta:",
+            passage: "Miền Bắc nằm trong vùng nhiệt đới nhưng có mùa đông lạnh do chịu ảnh hưởng của gió mùa Đông Bắc...",
+            options: [
+                { t: "Miền Bắc nằm trong đới khí hậu nhiệt đới.", c: true },
+                { t: "Mọi nơi ở miền Bắc có hai lần mặt trời lên thiên đỉnh.", c: true },
+                { t: "Mùa đông lạnh ở miền Bắc là do gió Mậu Dịch.", c: false },
+                { t: "Thiên nhiên miền Bắc chịu chi phối bởi hai quy luật địa đới và phi địa đới.", c: true }
+            ]
+        }
+    ];
+
+    // Short Answer Questions (exact from traloingan.html)
+    const shortData = [
+        {
+            id: 1,
+            title: "Tính giờ trận bóng đá",
+            desc: "Một trận bóng đá tổ chức tại Anh lúc 16h00 ngày 08/09/2024. Hà Nội (Việt Nam) xem lúc mấy giờ? (Biết Anh múi giờ 0, Hà Nội múi giờ 7).",
+            ans: "23"
+        },
+        {
+            id: 2,
+            title: "Tính biên độ nhiệt tại Lạng Sơn (2021)",
+            table: `<table class="short-table"><tr><th>Tháng</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th><th>11</th><th>12</th></tr><tr><td>Nhiệt độ (°C)</td><td>13.7</td><td>18.7</td><td>22.1</td><td>24.5</td><td>26.7</td><td>26.2</td><td>25.8</td><td>26.0</td><td>24.7</td><td>21.8</td><td>19.0</td><td>15.6</td></tr></table>`,
+            desc: "Tính biên độ nhiệt độ trung bình năm tại Lạng Sơn.",
+            ans: "13"
+        },
+        {
+            id: 3,
+            title: "Lưu lượng dòng chảy sông Gianh",
+            table: `<table class="short-table"><tr><th>Tháng</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th><th>11</th><th>12</th></tr><tr><td>Lưu lượng (m3/s)</td><td>27.7</td><td>19.3</td><td>17.5</td><td>10.7</td><td>28.7</td><td>36.7</td><td>40.6</td><td>58.4</td><td>185.0</td><td>178.0</td><td>94.1</td><td>43.7</td></tr></table>`,
+            desc: "Tính lưu lượng dòng chảy trung bình năm tại trạm Đồng Tâm.",
+            ans: "62"
+        },
+        {
+            id: 4,
+            title: "So sánh biên độ nhiệt Hà Nội và Cà Mau (2022)",
+            table: `<table class="short-table"><tr><th>Tháng</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th><th>11</th><th>12</th></tr><tr><td>Hà Nội</td><td>18.6</td><td>15.3</td><td>23.1</td><td>24.8</td><td>26.8</td><td>31.4</td><td>30.6</td><td>29.9</td><td>29.0</td><td>26.2</td><td>26.0</td><td>17.8</td></tr><tr><td>Cà Mau</td><td>27.1</td><td>27.9</td><td>28.0</td><td>28.7</td><td>28.6</td><td>28.7</td><td>27.9</td><td>27.8</td><td>27.4</td><td>27.7</td><td>26.7</td><td>26.6</td></tr></table>`,
+            desc: "Biên độ nhiệt độ năm của Hà Nội cao hơn Cà Mau bao nhiêu °C?",
+            ans: "14"
+        },
+        {
+            id: 5,
+            title: "Tổng lượng mưa tại Cà Mau (2022)",
+            table: `<table class="short-table"><tr><th>Tháng</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th><th>11</th><th>12</th></tr><tr><td>Lượng mưa (mm)</td><td>0.1</td><td>0.9</td><td>105.2</td><td>327.0</td><td>319.5</td><td>225.4</td><td>565.0</td><td>228.3</td><td>409.2</td><td>352.7</td><td>313.3</td><td>71.9</td></tr></table>`,
+            desc: "Tính tổng lượng mưa trong năm 2022 tại Cà Mau.",
+            ans: "2919"
+        }
+    ];
+
+    // ==================== NAVIGATION ====================
+    function startMode(mode) {
+        document.getElementById('home-screen').classList.add('hidden');
+        document.getElementById('back-btn').classList.remove('hidden');
+
+        if (mode === 'multiple') {
+            document.getElementById('multiple-section').classList.remove('hidden');
+            initMultipleChoice();
+        } else if (mode === 'truefalse') {
+            document.getElementById('truefalse-section').classList.remove('hidden');
+            initTrueFalse();
+        } else if (mode === 'short') {
+            document.getElementById('short-section').classList.remove('hidden');
+            initShortAnswer();
+        }
+    }
+
+    function backToHome() {
+        document.querySelectorAll('#multiple-section, #truefalse-section, #short-section, #mc-result-screen').forEach(el => el.classList.add('hidden'));
+        document.getElementById('home-screen').classList.remove('hidden');
+        document.getElementById('back-btn').classList.add('hidden');
+    }
+
+    // ==================== MULTIPLE CHOICE ====================
+    let mcQuestions = [], mcUserAnswers = [];
+
+    function shuffle(arr) { return arr.sort(() => Math.random() - 0.5); }
+
+    function initMultipleChoice() {
+        mcQuestions = shuffle([...multipleQuestions]);
+        mcQuestions = mcQuestions.map(q => {
+            const correctText = q.a[q.c];
+            const shuffledOpts = shuffle([...q.a]);
+            return { ...q, options: shuffledOpts, correctText: correctText };
+        });
+        renderMultiple();
+    }
+
+    function renderMultiple() {
+        const container = document.getElementById('mc-question-container');
+        container.innerHTML = mcQuestions.map((q, i) => `
+            <div class="question-box" style="margin-bottom:30px; padding-bottom:20px; border-bottom:1px solid rgba(255,255,255,0.05);">
+                <p><strong>Câu ${i+1}: ${q.q}</strong></p>
+                <div style="display:grid; gap:12px; margin-top:20px;">
+                    ${q.options.map(opt => `
+                        <div style="background:rgba(255,255,255,0.05); padding:15px 20px; border-radius:12px; cursor:pointer; border:1px solid rgba(255,255,255,0.1); transition:0.2s;"
+                             onclick="mcSelect(this, ${i}, '${opt.replace(/'/g, "\\'")}')">${opt}</div>
+                    `).join('')}
+                </div>
+            </div>
+        `).join('');
+        mcUserAnswers = new Array(mcQuestions.length);
+    }
+
+    function mcSelect(el, i, text) {
+        el.parentElement.querySelectorAll('div').forEach(o => {
+            o.style.background = 'rgba(255,255,255,0.05)';
+            o.style.color = '#e2e8f0';
+        });
+        el.style.background = '#4facfe';
+        el.style.color = '#0f172a';
+        mcUserAnswers[i] = text;
+    }
+
+    function submitMultiple() {
+        let score = 0;
+        const review = document.getElementById('mc-review-section');
+        review.innerHTML = "<h3 style='color:#fbbf24; text-align:center;'>Các câu cần lưu ý:</h3>";
+        mcQuestions.forEach((q, i) => {
+            if (mcUserAnswers[i] === q.correctText) score++;
+            else review.innerHTML += `
+                <div style="padding:15px; background:rgba(255,255,255,0.05); margin:10px 0; border-radius:10px; border-left:5px solid var(--danger);">
+                    <strong>${q.q}</strong><br>
+                    Bạn chọn: ${mcUserAnswers[i] || '<em>Chưa chọn</em>'}<br>
+                    <span style="color:var(--success)">Đúng: ${q.correctText}</span>
+                </div>`;
+        });
+        document.getElementById('multiple-section').classList.add('hidden');
+        document.getElementById('mc-result-screen').classList.remove('hidden');
+        document.getElementById('mc-final-score').innerText = `${score}/${mcQuestions.length}`;
+    }
+
+    // ==================== TRUE/FALSE ====================
+    let tfUserAnswers = {};
+
+    function initTrueFalse() {
+        const container = document.getElementById('tf-quiz-content');
+        container.innerHTML = trueFalseQuestions.map(q => `
+            <div class="quiz-card">
+                <div class="q-title">${q.title}</div>
+                ${q.table ? `<div class="table-container">${q.table}</div>` : ''}
+                ${q.passage ? `<div class="passage">${q.passage}</div>` : ''}
+                <div class="options">
+                    ${q.options.map((opt, i) => `
+                        <div class="option-item" id="tf-row-${q.id}-${i}">
+                            <div style="flex:1">
+                                <strong>${String.fromCharCode(97+i)}.</strong> ${opt.t}
+                                <div id="tf-fb-${q.id}-${i}" class="feedback" style="display:none"></div>
+                            </div>
+                            <div class="btn-group">
+                                <button class="tf-btn" onclick="tfSet(${q.id},${i},true,this)">Đúng</button>
+                                <button class="tf-btn" onclick="tfSet(${q.id},${i},false,this)">Sai</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `).join('');
+
+        document.getElementById('tf-submit-btn').onclick = function() {
+            let score = 0, total = 0;
+            trueFalseQuestions.forEach(q => {
+                q.options.forEach((opt, i) => {
+                    total++;
+                    const ans = tfUserAnswers[`${q.id}-${i}`];
+                    const row = document.getElementById(`tf-row-${q.id}-${i}`);
+                    const fb = document.getElementById(`tf-fb-${q.id}-${i}`);
+                    fb.style.display = 'block';
+                    if (ans === opt.c) {
+                        score++;
+                        row.classList.add('correct-ans');
+                        fb.innerHTML = "✓ Đúng"; fb.style.color = "#10b981";
+                    } else {
+                        row.classList.add('wrong-ans');
+                        fb.innerHTML = `✕ Sai (Đáp án đúng: ${opt.c ? 'Đúng' : 'Sai'})`;
+                        fb.style.color = "#ef4444";
+                    }
+                });
+            });
+            const summary = document.getElementById('tf-result-summary');
+            summary.style.display = 'block';
+            summary.innerHTML = `<h2>Kết quả: ${score}/${total} ý đúng</h2><p>Vui lòng xem lại các câu bị tô màu đỏ.</p>`;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+    }
+
+    function tfSet(qId, oIdx, val, btn) {
+        tfUserAnswers[`${qId}-${oIdx}`] = val;
+        btn.parentElement.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+    }
+
+    // ==================== SHORT ANSWER ====================
+    function shuffle(array) { let a = [...array]; for (let i = a.length-1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+    function initShortAnswer() {
+        const container = document.getElementById('short-quiz-content');
+        const shuffled = shuffle(shortData);
+        container.innerHTML = shuffled.map((q, index) => `
+            <div class="short-card">
+                <div class="q-title">Câu ${index + 1}: ${q.title}</div>
+                ${q.table ? q.table : ''}
+                <p>${q.desc}</p>
+                <div class="input-group">
+                    <input type="text" id="short-ans-${q.id}" placeholder="Nhập kết quả là số...">
+                    <div class="short-feedback" id="short-fb-${q.id}"></div>
+                </div>
+            </div>
+        `).join('');
+
+        document.getElementById('short-submit-btn').onclick = function() {
+            shortData.forEach(q => {
+                const input = document.getElementById(`short-ans-${q.id}`);
+                const fb = document.getElementById(`short-fb-${q.id}`);
+                if (!input) return;
+                const userVal = input.value.trim();
+                fb.style.display = 'block';
+                if (userVal === q.ans) {
+                    fb.innerHTML = "✓ Chính xác!";
+                    fb.className = "short-feedback short-correct";
+                } else {
+                    fb.innerHTML = `✕ Sai rồi. Đáp án đúng là: ${q.ans}`;
+                    fb.className = "short-feedback short-wrong";
+                }
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VIP Vocabulary Trainer</title>
+
+<style>
+:root{
+  --primary:#6366f1;
+  --bg:#020617;
+  --glass:rgba(255,255,255,.12);
+}
+*{box-sizing:border-box}
+
+body{
+  margin:0;min-height:100vh;
+  font-family:system-ui,sans-serif;
+  background:radial-gradient(circle at top left,#6366f1,#020617);
+  color:white;display:flex;justify-content:center
+}
+.app{max-width:900px;width:100%;padding:40px 20px}
+h1{margin-bottom:20px}
+
+.tabs{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:30px}
+.tabs button{
+  padding:10px 18px;border-radius:999px;border:none;
+  background:var(--glass);color:white;cursor:pointer
+}
+.tabs button.active{
+  background:linear-gradient(135deg,#6366f1,#8b5cf6)
+}
+.section{display:none}
+.section.active{display:block}
+
+/* FLASHCARD */
+.controls{display:flex;gap:10px;margin-bottom:20px}
+.controls button{
+  padding:10px 18px;border-radius:999px;border:none;
+  background:var(--glass);color:white;cursor:pointer
+}
+.flashcard{
+  width:520px;height:280px;margin:auto;
+  background:linear-gradient(145deg,#fff,#eef2ff);
+  border-radius:24px;padding:32px;
+  box-shadow:0 30px 60px rgba(0,0,0,.4);
+  transform-style:preserve-3d;
+  transition:.7s;cursor:pointer;position:relative
+}
+.flashcard.flipped{transform:rotateY(180deg)}
+.face{
+  position:absolute;inset:0;padding:32px;
+  backface-visibility:hidden;
+  display:flex;flex-direction:column;justify-content:center
+}
+.back{transform:rotateY(180deg)}
+.label{font-size:12px;letter-spacing:.14em;color:#6366f1}
+.word{font-size:36px;color:#0f172a}
+.example{margin-top:14px;color:#334155}
+
+/* TYPING */
+.typing-box{
+  max-width:520px;margin:auto;
+  background:var(--glass);padding:30px;border-radius:24px
+}
+.typing-box input{
+  width:100%;padding:14px;border-radius:12px;border:none;font-size:18px
+}
+
+/* MATCH */
+.match-grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:14px;max-width:520px;margin:auto
+}
+.match{
+  padding:14px;border-radius:14px;
+  cursor:pointer;text-align:center
+}
+.en{background:white;color:#0f172a}
+.vi{background:#e0e7ff;color:#1e1b4b}
+.match.selected{outline:3px solid #6366f1}
+.match.correct{background:#dcfce7!important;pointer-events:none}
+.match.wrong{background:#fee2e2}
+
+/* ADD / MANAGE */
+.box{
+  max-width:600px;margin:auto;
+  background:var(--glass);padding:24px;border-radius:24px
+}
+textarea{width:100%;height:120px;border-radius:14px;border:none;padding:12px}
+.list{margin-top:20px}
+.item{
+  display:flex;justify-content:space-between;
+  background:white;color:#0f172a;
+  padding:10px 14px;border-radius:10px;margin-bottom:8px
+}
+.item button{
+  background:#ef4444;border:none;color:white;
+  border-radius:8px;padding:4px 10px;cursor:pointer
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+<h1>🚀 Vocabulary </h1>
+
+<div class="tabs">
+  <button class="active" onclick="show('flash')">🃏 Flashcard</button>
+  <button onclick="show('typing')">✍️ Viết</button>
+  <button onclick="show('match')">🔗 Nối</button>
+  <button onclick="show('add')">➕ Thêm</button>
+  <button onclick="show('manage')">🗑 Quản lý</button>
+</div>
+
+<!-- FLASHCARD -->
+<div id="flash" class="section active">
+  <div class="controls">
+    <button onclick="nextCard()">➡️ Từ tiếp theo</button>
+    <button onclick="speak()">🔊 Phát âm</button>
+  </div>
+  <div class="flashcard" id="card" onclick="card.classList.toggle('flipped')">
+    <div class="face">
+      <div class="label">Vocabulary</div>
+      <div class="word" id="front"></div>
+    </div>
+    <div class="face back">
+      <div class="label">Meaning</div>
+      <div class="word" id="back"></div>
+      <div class="example" id="example"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TYPING -->
+<div id="typing" class="section">
+  <div class="typing-box">
+    <p id="typingHint"></p>
+    <input id="typingInput" placeholder="Gõ từ rồi Enter"
+      onkeydown="checkTyping(event)">
+  </div>
+</div>
+
+<!-- MATCH -->
+<div id="match" class="section">
+  <button onclick="loadMatch()">🎲 Bắt đầu</button>
+  <div class="match-grid">
+    <div id="left"></div>
+    <div id="right"></div>
+  </div>
+</div>
+
+<!-- ADD -->
+<div id="add" class="section">
+  <div class="box">
+    <p>English = Vietnamese = Example</p>
+    <textarea id="wordInput"></textarea>
+    <button onclick="saveWords()">💾 Lưu</button>
+  </div>
+</div>
+
+<!-- MANAGE -->
+<div id="manage" class="section">
+  <div class="box">
+    <h3>🗑 Danh sách từ</h3>
+    <div class="list" id="wordList"></div>
+  </div>
+</div>
+</div>
+
+<script>
+let words=JSON.parse(localStorage.getItem('vip_words'))||[
+{en:'air pollution',vi:'ô nhiễm không khí',ex:'Air pollution is dangerous.'},
+{en:'climate change',vi:'biến đổi khí hậu',ex:'Climate change affects everyone.'},
+{en:'deforestation',vi:'nạn phá rừng',ex:'Deforestation destroys forests.'},
+{en:'endangered species',vi:'loài có nguy cơ tuyệt chủng',ex:'Pandas are endangered species.'},
+{en:'extinct',vi:'tuyệt chủng',ex:'Dinosaurs are extinct.'},
+{en:'extreme',vi:'khắc nghiệt',ex:'Extreme weather is increasing.'},
+{en:'emission',vi:'sự thải ra',ex:'Car emission causes pollution.'},
+{en:'plastic pollution',vi:'ô nhiễm nhựa',ex:'Plastic pollution kills fish.'},
+{en:'ozone layer',vi:'tầng ô-dôn',ex:'The ozone layer protects us.'},
+{en:'thinning',vi:'sự mỏng đi',ex:'Ozone thinning is dangerous.'},
+{en:'greenhouse gases',vi:'khí nhà kính',ex:'Greenhouse gases trap heat.'}
+];
+saveStore();
+
+let current=null,typingWord=null,selectedEN=null;
+
+/* NAV */
+function show(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+  if(id==='typing') startTyping();
+  if(id==='manage') renderList();
+}
+
+/* STORE */
+function saveStore(){
+  localStorage.setItem('vip_words',JSON.stringify(words));
+}
+
+/* FLASHCARD */
+function nextCard(){
+  current=words[Math.floor(Math.random()*words.length)];
+  card.classList.remove('flipped');
+  front.innerText=current.en;
+  back.innerText=current.vi;
+  example.innerText=current.ex;
+}
+function speak(){
+  if(current) speechSynthesis.speak(new SpeechSynthesisUtterance(current.en));
+}
+
+/* TYPING */
+function startTyping(){
+  typingWord=words[Math.floor(Math.random()*words.length)];
+  typingHint.innerText='👉 '+typingWord.vi;
+  typingInput.value='';
+}
+function checkTyping(e){
+  if(e.key==='Enter'){
+    typingHint.innerText=
+      typingInput.value.trim()===typingWord.en?'✅ Chính xác':'❌ '+typingWord.en;
+    setTimeout(startTyping,1200);
+  }
+}
+
+/* MATCH */
+function loadMatch(){
+  selectedEN=null;
+  left.innerHTML=right.innerHTML='';
+  const sample=[...words].sort(()=>.5-Math.random()).slice(0,4);
+  sample.forEach(w=>{
+    const d=document.createElement('div');
+    d.className='match en';d.innerText=w.en;
+    d.onclick=()=>selectEN(d,w);left.appendChild(d);
+  });
+  [...sample].sort(()=>.5-Math.random()).forEach(w=>{
+    const d=document.createElement('div');
+    d.className='match vi';d.innerText=w.vi;
+    d.onclick=()=>selectVI(d,w);right.appendChild(d);
+  });
+}
+function selectEN(el,w){
+  document.querySelectorAll('.en').forEach(e=>e.classList.remove('selected'));
+  el.classList.add('selected');selectedEN={el,w};
+}
+function selectVI(el,w){
+  if(!selectedEN) return;
+  if(selectedEN.w===w){
+    el.classList.add('correct');selectedEN.el.classList.add('correct');
+  }else{
+    el.classList.add('wrong');selectedEN.el.classList.add('wrong');
+    setTimeout(()=>{el.classList.remove('wrong');selectedEN.el.classList.remove('wrong')},600);
+  }
+  selectedEN.el.classList.remove('selected');selectedEN=null;
+}
+
+/* ADD */
+function saveWords(){
+  wordInput.value.split('\n').forEach(l=>{
+    const p=l.split('=');
+    if(p.length>=2) words.push({en:p[0].trim(),vi:p[1].trim(),ex:(p[2]||'')});
+  });
+  saveStore();wordInput.value='';alert('Đã lưu!');
+}
+
+/* MANAGE */
+function renderList(){
+  wordList.innerHTML='';
+  words.forEach((w,i)=>{
+    const d=document.createElement('div');
+    d.className='item';
+    d.innerHTML=`<span>${w.en}</span><button onclick="del(${i})">Xoá</button>`;
+    wordList.appendChild(d);
+  });
+}
+function del(i){
+  if(confirm('Xoá từ này?')){
+    words.splice(i,1);saveStore();renderList();
+  }
+}
+
+nextCard();
+</script>
+</body>
+</html>
